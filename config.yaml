@@ -1,0 +1,2 @@
+authentication_service_port: ":45001"
+jwt_secret: "my_super_secret_key"

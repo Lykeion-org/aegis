@@ -1,31 +1,32 @@
 package main
 
 import(
-	"fmt"
-	aegis_grpc "github.com/lykeion-org/aegis/internal/grpc"
-	rest_api "github.com/lykeion-org/aegis/internal/api"
+	"log/slog"
+	"github.com/Lykeion-org/go-shared/pkg/config"
+	utils "github.com/Lykeion-org/go-shared/pkg/helpers"
+	grpc "github.com/Lykeion-org/aegis/internal/grpc"
 )
 
+
 func main(){
-
-	fmt.Println("Initializing aegis service")
-
-	jwtSecret := []byte("your_jwt_secret_here")
-	servicePort := ":30002"
-	restPort := ":30800"
-	server := aegis_grpc.NewAuthService(jwtSecret)
-
-	fmt.Printf("Starting grpc server on port %s\n", servicePort)
-	err := server.StartServer(servicePort)
+	cfg, err := config.LoadConfigFile[Config]("../config.yaml")
 	if err != nil {
-		fmt.Printf("Failed to start service: %s\n", err)
+		panic(err)
 	}
 
-	fmt.Println("Listening for incoming requests")
+	utils.InitializeStandardLogger("debug")
 
-	api := rest_api.NewApi(server.AuthHandler)
-	api.InitializeApi(restPort)
+	slog.Info("Initializing application")
 
-	select {}
+	server := grpc.NewAuthService([]byte(cfg.JwtSecret))
+	slog.Info("Starting grpc server", "port", cfg.AuthenticationServerPort)
+	err = server.StartServer(cfg.AuthenticationServerPort)
+	if err != nil {
+		slog.Error("Failed to start grpc server", "error", err)
+	}
+
+	slog.Info("Application started")
+
+	select{}
 
 }

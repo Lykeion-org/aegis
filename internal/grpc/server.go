@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 	"net"
-
-	auth "github.com/lykeion-org/aegis/internal/auth"
-	pb "github.com/lykeion-org/aegis/internal/grpc/generated"
+	auth "github.com/Lykeion-org/aegis/internal/auth"
+	pb "github.com/Lykeion-org/go-shared/pkg/grpc/generated/aegis"
+	lyk_grpc "github.com/Lykeion-org/go-shared/pkg/grpc"
 	"google.golang.org/grpc"
 )
 
@@ -15,7 +15,7 @@ type AuthService struct {
 	activeServer *grpc.Server
 }
 
-func NewAuthService(jwtSecret []byte) *AuthService{
+func NewAuthService(jwtSecret []byte) lyk_grpc.Server{
 	return &AuthService{
 		AuthHandler: auth.NewAuthHandler(jwtSecret),
 	}
