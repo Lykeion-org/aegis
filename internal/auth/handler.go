@@ -30,12 +30,12 @@ func NewAuthHandler(jwtSecret []byte) AuthHandler {
 }
 
 func (h *authHandler) CreateToken(ctx context.Context, userUid string, role int32) (*TokenRequest, error) {
-	accessToken, err := GenerateToken(h.jwtSecret, userUid, role, 15*time.Minute)
+	accessToken, err := GenerateToken(h.jwtSecret, userUid, role, AccessTokenType, 15*time.Minute)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate access token")
 	}
 
-	refreshToken, err := GenerateToken(h.jwtSecret, userUid, role, 7*24*time.Hour)
+	refreshToken, err := GenerateToken(h.jwtSecret, userUid, role, RefreshTokenType, 7*24*time.Hour)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate refresh token")
 	}
@@ -47,7 +47,7 @@ func (h *authHandler) CreateToken(ctx context.Context, userUid string, role int3
 }
 
 func (h *authHandler) ValidateAccessToken(ctx context.Context, token string) (*TokenClaims, error) {
-	claims, err := ParseToken(h.jwtSecret, token)
+	claims, err := ParseToken(h.jwtSecret, token, AccessTokenType)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid access token")
 	}
@@ -55,12 +55,12 @@ func (h *authHandler) ValidateAccessToken(ctx context.Context, token string) (*T
 }
 
 func (h *authHandler) RefreshToken(ctx context.Context, token string) (string, error) {
-	claims, err := ParseToken(h.jwtSecret, token)
+	claims, err := ParseToken(h.jwtSecret, token, RefreshTokenType)
 	if err != nil {
 		return "", status.Errorf(codes.Unauthenticated, "invalid refresh token")
 	}
 
-	newAccessToken, err := GenerateToken(h.jwtSecret, claims.UserUid, claims.Role, 15*time.Minute)
+	newAccessToken, err := GenerateToken(h.jwtSecret, claims.UserUid, claims.Role, AccessTokenType, 15*time.Minute)
 	if err != nil {
 		return "", status.Errorf(codes.Internal, "failed to generate access token")
 	}
